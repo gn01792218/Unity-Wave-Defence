@@ -1,0 +1,33 @@
+# 🛑 Unity 相關資料夾（不需要加入版本控制）
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+
+# 🛑 VSCode / Rider / Visual Studio 相關
+.vscode/
+*.csproj
+*.sln
+*.unityproj
+*.user
+*.pidb
+*.suo
+*.svd
+*.pdb
+*.db
+*.opendb
+*.VC.db
+.idea/
+
+# 🛑 其他平台產生的暫存檔案
+*.apk
+*.aab
+*.unitypackage
+*.app
+*.ipa
+
+# 🛑 MacOS / Windows / Linux 系統檔
