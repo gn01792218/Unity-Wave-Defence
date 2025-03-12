@@ -1,46 +1,38 @@
 using UnityEngine;
 using System.Collections;
-public class RocketBullet : MonoBehaviour, IBullet
+public class RocketBullet : BulletBase
 {
-    private Vector3 targetPosition;
-    private float damage;
-    public float explosionRadius = 3f;
-    public float speed = 5f;
+    public override float Damage { get; set; } = 20f; // 初始傷害
+    public override float Speed { get; set; } = 3f;   // 初始速度
 
-    public void Initialize(Vector3 targetPos, float dmg)
+    public float explosionRadius = 5f;
+    
+    protected override BulletType GetBulletType()
     {
-        targetPosition = targetPos;
-        damage = dmg;
+        return BulletType.RocketBullet;
     }
-
-    public void Launch()
+    protected override void HandleExplosion(Vector3 hitPosition)
     {
-        // 實現火箭彈的飛行邏輯
-        StartCoroutine(MoveToTarget());
-    }
-
-    private IEnumerator MoveToTarget()
-    {
-        while (Vector3.Distance(transform.position, targetPosition) > 0.1f)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
-            yield return null;
-        }
-        OnHit();
-    }
-
-    public void OnHit()
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        // 爆炸效果
+        // Instantiate(explosionEffect, hitPosition, Quaternion.identity);
+        
+        // 範圍傷害
+        Collider[] hitColliders = Physics.OverlapSphere(hitPosition, explosionRadius);
         foreach (var hit in hitColliders)
         {
-            Unit enemy = hit.GetComponent<Unit>();
-            if (enemy != null)
+            if (hit.gameObject.layer == LayerMask.NameToLayer("Unit"))
             {
-                enemy.TakeDamage(damage);
+                Unit unit = hit.GetComponent<Unit>();
+                if (unit != null)
+                {
+                    // 根據距離計算傷害衰減
+                    float distance = Vector3.Distance(hitPosition, hit.transform.position);
+                    float damagePercent = 1.0f - (distance / explosionRadius);
+                    float actualDamage = Damage * Mathf.Max(0.1f, damagePercent);
+                    unit.TakeDamage(actualDamage);
+                }
             }
         }
-        // 將子彈回收到物件池中
-        BulletFactory.Instance.ReturnBullet(BulletType.NormalBullet, gameObject);
     }
+
 }

@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class Unit : MonoBehaviour
+public abstract class Unit : MonoBehaviour
 {
     [Header("Unit Setup")]
     public Team team;  // 單位所屬的隊伍
@@ -11,20 +12,20 @@ public class Unit : MonoBehaviour
     [SerializeField]
     private string layerName = "Unit";
 
-    [Header("Unit Stats")]
-    public BulletType bulletType = BulletType.NormalBullet; // 默認是普通子彈
 
-    public float health = 100f;
-    public float moveSpeed = 3.5f;
-    public float attackRange = 2f;
-    public float attackCooldown = 1.5f;
-    public float damage = 10f;
+    [Header("Unit Stats")]
+    public abstract float Health { get; set; }
+    public abstract float MoveSpeed { get; set; }
+    public abstract float AttackRange { get; set; }
+    public abstract float AttackCooldown { get; set; }
+    public abstract float Damage { get; set; }
+    public abstract float DetectionRange { get; set; }
+    public abstract BulletType BulletType { get; set; }
 
     private NavMeshAgent agent;
     private float lastAttackTime;
-    private Vector3 attackTarget;
+    private Vector3 attackTargetPosition;
 
-    public float detectionRange = 10f;  // 偵測敵人範圍
 
     private bool isPlayerControl = false; // 標誌是否正在被玩家控制
 
@@ -38,12 +39,13 @@ public class Unit : MonoBehaviour
             Debug.LogError("NavMeshAgent 沒有附加到此物件。");
             return;
         }
-        agent.speed = moveSpeed;
+        agent.speed = MoveSpeed;
+
+        //設置layer
+        gameObject.layer = LayerMask.NameToLayer(layerName);
 
         // 確保物件一開始就放置在地板上
         Vector3 startPosition = transform.position;
-        //設置layer
-        gameObject.layer = LayerMask.NameToLayer(layerName);
 
         // 嘗試在附近找到有效的 NavMesh 位置
         if (NavMesh.SamplePosition(startPosition, out NavMeshHit hit, 1.0f, NavMesh.AllAreas))
@@ -54,6 +56,13 @@ public class Unit : MonoBehaviour
         {
             Debug.LogError("物件未能放置在有效的 NavMesh 上，請檢查地板的 NavMesh 烘焙設置。");
         }
+
+        // 檢查是否與其他單位重疊，如果重疊則將位置微調
+        CheckForOverlappingUnits();
+    }
+    void Start()
+    {
+        BulletFactory.Instance.RegisterBullet(BulletType);
     }
 
     void Update()
@@ -63,18 +72,12 @@ public class Unit : MonoBehaviour
         if (Vector3.Distance(transform.position, playerTargetPosition) <= agent.stoppingDistance)
         {
             SetPlayControl(false);
-            SearchForEnemies(); // 啟動自動尋敵
+            // SearchForEnemies(); // 啟動自動尋敵
         }
         // 如果不是正在移動到右鍵目標，則進行自動尋敵邏輯
         if (!isPlayerControl)
         {
             SearchForEnemies();
-        }
-
-        // 攻擊邏輯
-        if (Vector3.Distance(transform.position, attackTarget) <= attackRange && Time.time - lastAttackTime >= attackCooldown)
-        {
-            AttackTarget();
         }
     }
 
@@ -84,11 +87,12 @@ public class Unit : MonoBehaviour
         if (agent != null)
         {
             agent.SetDestination(destination);
-            Debug.Log($"單位移動到{destination}");
+            // Debug.Log($"單位移動到{destination}");
         }
     }
     public void MoveToPlayerSpceficPosition(Vector3 destination)
     {
+        Debug.Log("移動到玩家指定位置");
         SetPlayControl(true);
         SetPlayerTargetPosition(destination);
         MoveTo(destination);
@@ -102,11 +106,6 @@ public class Unit : MonoBehaviour
         }
     }
 
-    // ✅ 設定攻擊座標，讓子彈朝該位置發射
-    public void SetAttackTarget(Vector3 target)
-    {
-        attackTarget = target;
-    }
     public void SetPlayControl(Boolean isControl)
     {
         isPlayerControl = isControl;
@@ -116,71 +115,44 @@ public class Unit : MonoBehaviour
         playerTargetPosition = position;
     }
 
-    private void AttackTarget()
+    public void SetAttackTargetPosition(Vector3 position)
+    {
+        attackTargetPosition = position;
+    }
+    // ✅ 受傷機制
+    public void TakeDamage(float amount)
+    {
+        Health -= amount;
+        Debug.Log(gameObject.name + " 受到傷害：" + amount + "，剩餘血量：" + Health);
+        if (Health <= 0)
+        {
+            Die();
+        }
+    }
+    private void AttackTarget(Vector3 position)
     {
         lastAttackTime = Time.time;
+        attackTargetPosition = position;
         SpawnBullet();
     }
 
     private void SpawnBullet()
     {
-        if (BulletFactory.Instance == null)
-        {
-            Debug.LogError("BulletFactory 未初始化！");
-            return;
-        }
-
         // 從工廠獲取子彈
-        GameObject bullet = BulletFactory.Instance.GetBullet(bulletType);
-
-        if (bullet == null)
-        {
-            Debug.LogError("無法生成子彈：" + bulletType);
-            return;
-        }
+        BulletBase bullet = BulletFactory.Instance.GetBullet(BulletType);
 
         // 設定子彈初始位置與方向
-        bullet.transform.position = transform.position + Vector3.up * 1.5f; // 避免子彈直接穿過地面
-        bullet.transform.LookAt(attackTarget); // 讓子彈朝向目標
-
-        // 讓子彈開始移動
-        Rigidbody rb = bullet.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            Vector3 direction = (attackTarget - bullet.transform.position).normalized;
-            rb.linearVelocity = direction * 10f; // 設定子彈速度
-        }
+        bullet.Launch(attackTargetPosition, transform.position, gameObject);
     }
 
-    // ✅ 受傷機制
-    public void TakeDamage(float amount)
-    {
-        health -= amount;
-        Debug.Log(gameObject.name + " 受到傷害：" + damage + "，剩餘血量：" + health);
-        if (health <= 0)
-        {
-            Die();
-        }
-    }
 
     private void Die()
     {
+        if (UnitSelection.Instance != null)
+        {
+            UnitSelection.Instance.RemoveUnitFromSelection(this);
+        }
         Destroy(gameObject);
-    }
-
-    // 🚀 允許玩家使用鍵盤切換武器
-    private void HandleWeaponSwitch()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha1)) //數字鍵1
-        {
-            bulletType = BulletType.NormalBullet;
-            Debug.Log("切換武器：普通子彈");
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2)) //數字鍵2
-        {
-            bulletType = BulletType.RocketBullet;
-            Debug.Log("切換武器：火箭彈");
-        }
     }
 
     // ✅ 自動尋找敵人並移動
@@ -193,20 +165,70 @@ public class Unit : MonoBehaviour
         }
 
         // 假設敵人是標記為不同隊伍的單位
-        Collider[] enemies = Physics.OverlapSphere(transform.position, detectionRange);
+        Collider[] enemies = Physics.OverlapSphere(transform.position, DetectionRange);
         foreach (var enemy in enemies)
         {
             Unit enemyUnit = enemy.GetComponent<Unit>();
             if (enemyUnit != null && enemyUnit.team != this.team)  // 檢查是不是敵方
             {
-                // 更新目標並開始追蹤
-                // 計算移動目標位置
-                Vector3 directionToEnemy = (enemy.transform.position - transform.position).normalized;
-                Vector3 targetPosition = enemy.transform.position - directionToEnemy * attackRange;
-                MoveTo(targetPosition); // 移動到敵人位置
-                SetAttackTarget(enemy.transform.position); // 設置攻擊目標
+                float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
+
+                // 只有當敵人超出攻擊範圍時才追蹤
+                if (distanceToEnemy > AttackRange)
+                {
+                    // 計算移動目標位置
+                    Vector3 directionToEnemy = (enemy.transform.position - transform.position).normalized;
+                    Vector3 targetPosition = enemy.transform.position - directionToEnemy * AttackRange;
+                    MoveTo(targetPosition); // 移動到攻擊範圍內
+                }
+
+                // 當距離小於等於攻擊範圍，且攻擊冷卻結束，則攻擊敵人
+                if (distanceToEnemy <= AttackRange && Time.time - lastAttackTime >= AttackCooldown)
+                {
+                    AttackTarget(enemy.transform.position);
+                }
+
                 break; // 找到敵人就停止尋找
             }
+        }
+    }
+    private void CheckForOverlappingUnits()
+    {
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 1.0f, LayerMask.GetMask("Unit"));
+        foreach (Collider col in colliders)
+        {
+            Unit otherUnit = col.GetComponent<Unit>();
+            if (otherUnit != null && otherUnit != this && IsOverlapping(otherUnit))
+            {
+                // 如果重疊，將位置向外移動
+                // 稍微移動物體來確保碰撞檢測
+                Vector3 offset = new Vector3(0.01f, 0.01f, 0.01f); // 小的偏移量
+                transform.position += offset; // 移動物體
+            }
+        }
+    }
+    bool IsOverlapping(Unit otherUnit)
+    {
+        // 檢查當前物體和其他 Unit 的碰撞器是否重疊
+        Collider otherCollider = otherUnit.GetComponent<Collider>();
+        if (otherCollider != null)
+        {    
+            return GetComponent<Collider>().bounds.Intersects(otherCollider.bounds);
+        }
+        return false;
+    }
+    // 🚀 允許玩家使用鍵盤切換武器
+    private void HandleWeaponSwitch()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1)) //數字鍵1
+        {
+            BulletType = BulletType.NormalBullet;
+            Debug.Log("切換武器：普通子彈");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2)) //數字鍵2
+        {
+            BulletType = BulletType.RocketBullet;
+            Debug.Log("切換武器：火箭彈");
         }
     }
 }

@@ -16,7 +16,7 @@ public class UnitManager : MonoBehaviour
                 Unit nearestEnemy = FindNearestEnemy(unit);
                 if (nearestEnemy != null)
                 {
-                    unit.SetAttackTarget(nearestEnemy.transform.position);
+                    unit.SetAttackTargetPosition(nearestEnemy.transform.position);
                 }
             }
         }

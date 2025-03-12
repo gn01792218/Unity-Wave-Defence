@@ -1,5 +1,6 @@
 public enum BulletType
 {
     NormalBullet,
-    RocketBullet
+    RocketBullet,
+    TankGunBullet,
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class UnitSelection : MonoBehaviour
@@ -6,19 +7,30 @@ public class UnitSelection : MonoBehaviour
     public Camera mainCamera;
     public LayerMask unitLayer;
     public LayerMask groundLayer;
+    public static UnitSelection Instance { get; private set; }  // 单例模式
 
     private List<Unit> selectedUnits = new List<Unit>();
-    private List<Unit> allUnits = new List<Unit>();
 
     // 框選相關變數
     private Vector3 startMousePosition;
     private bool isDragging = false;
 
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);  // 确保只有一个 `UnitSelection` 实例
+        }
+    }
+
     void Start()
     {
         unitLayer = LayerMask.GetMask("Unit");
         groundLayer = LayerMask.GetMask("Ground");
-        allUnits.AddRange(FindObjectsByType<Unit>(FindObjectsSortMode.None));
     }
 
     void Update()
@@ -90,10 +102,8 @@ public class UnitSelection : MonoBehaviour
         // 框選多個單位
         Rect selectionRect = GetScreenSelectionRect();
 
-        foreach (Unit unit in allUnits)
+        foreach (Unit unit in FindObjectsOfType<Unit>())
         {
-            // 先判斷隊伍，避免不必要的座標轉換計算
-            if (unit.team.teamType != Team.TeamType.Player) continue;
             Vector3 screenPos = mainCamera.WorldToScreenPoint(unit.transform.position);
 
             if (selectionRect.Contains(screenPos))
@@ -194,5 +204,14 @@ public class UnitSelection : MonoBehaviour
         if (!isDragging) return;
         Rect rect = GetGUISelectionRect();
         GUI.Box(rect, "");
+    }
+
+    public void RemoveUnitFromSelection(Unit unit)
+    {
+        if (selectedUnits.Contains(unit))
+        {
+            selectedUnits.Remove(unit);
+            ResetUnitHighlight(unit);
+        }
     }
 }
