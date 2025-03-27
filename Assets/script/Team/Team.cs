@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Team : MonoBehaviour
+public class Team
 {
     public enum TeamType
     {
@@ -18,6 +18,11 @@ public class Team : MonoBehaviour
     [Header("Allied and Enemy Teams")]
     public List<Team> alliedTeams = new List<Team>();  // 同盟隊伍
     public List<Team> enemyTeams = new List<Team>();   // 敵對隊伍
+
+    public Team(TeamType teamType, string teamName){
+        this.teamType = teamType;
+        this.teamName = teamName;
+    }
 
     private void Awake()
     {
@@ -36,5 +41,8 @@ public class Team : MonoBehaviour
     public bool IsAlly(Team otherTeam)
     {
         return alliedTeams.Contains(otherTeam);
+    }
+    public void SetTeamType(TeamType teamType){
+        this.teamType = teamType;
     }
 }

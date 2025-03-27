@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 5322617639405202645}
   - component: {fileID: 6407279003013198867}
   - component: {fileID: 8355984462856842807}
-  - component: {fileID: 276884311556800073}
+  - component: {fileID: 5369380174998430219}
   m_Layer: 0
-  m_Name: Enemy
+  m_Name: Mech
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -132,7 +132,7 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &276884311556800073
+--- !u!114 &5369380174998430219
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -146,3 +146,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   team: {fileID: 0}
   layerName: Unit
+  prefab: {fileID: 0}

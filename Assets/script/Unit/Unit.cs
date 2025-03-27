@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -11,9 +12,11 @@ public abstract class Unit : MonoBehaviour
 
     [SerializeField]
     private string layerName = "Unit";
+    public abstract string PrefabPath { get; }
 
 
     [Header("Unit Stats")]
+    public abstract float Cost { get; set; }
     public abstract float Health { get; set; }
     public abstract float MoveSpeed { get; set; }
     public abstract float AttackRange { get; set; }
@@ -21,6 +24,7 @@ public abstract class Unit : MonoBehaviour
     public abstract float Damage { get; set; }
     public abstract float DetectionRange { get; set; }
     public abstract BulletType BulletType { get; set; }
+
 
     private NavMeshAgent agent;
     private float lastAttackTime;
@@ -72,7 +76,6 @@ public abstract class Unit : MonoBehaviour
         if (Vector3.Distance(transform.position, playerTargetPosition) <= agent.stoppingDistance)
         {
             SetPlayControl(false);
-            // SearchForEnemies(); // 啟動自動尋敵
         }
         // 如果不是正在移動到右鍵目標，則進行自動尋敵邏輯
         if (!isPlayerControl)
@@ -81,7 +84,12 @@ public abstract class Unit : MonoBehaviour
         }
     }
 
+    public float getUnitCostValue()
+    {
+        return this.Cost;
+    }
     // ✅ 允許玩家或 AI 讓單位移動到指定位置
+
     public void MoveTo(Vector3 destination)
     {
         if (agent != null)
@@ -92,7 +100,7 @@ public abstract class Unit : MonoBehaviour
     }
     public void MoveToPlayerSpceficPosition(Vector3 destination)
     {
-        Debug.Log("移動到玩家指定位置");
+        // Debug.Log("移動到玩家指定位置");
         SetPlayControl(true);
         SetPlayerTargetPosition(destination);
         MoveTo(destination);
@@ -114,7 +122,11 @@ public abstract class Unit : MonoBehaviour
     {
         playerTargetPosition = position;
     }
-
+    public void SetTeam(Team team)
+    {
+        this.team = team;
+        Debug.Log($"設置隊伍{team.teamType}");
+    }
     public void SetAttackTargetPosition(Vector3 position)
     {
         attackTargetPosition = position;
@@ -123,7 +135,7 @@ public abstract class Unit : MonoBehaviour
     public void TakeDamage(float amount)
     {
         Health -= amount;
-        Debug.Log(gameObject.name + " 受到傷害：" + amount + "，剩餘血量：" + Health);
+        // Debug.Log(gameObject.name + " 受到傷害：" + amount + "，剩餘血量：" + Health);
         if (Health <= 0)
         {
             Die();
@@ -145,7 +157,6 @@ public abstract class Unit : MonoBehaviour
         bullet.Launch(attackTargetPosition, transform.position, gameObject);
     }
 
-
     private void Die()
     {
         if (UnitSelection.Instance != null)
@@ -166,29 +177,40 @@ public abstract class Unit : MonoBehaviour
 
         // 假設敵人是標記為不同隊伍的單位
         Collider[] enemies = Physics.OverlapSphere(transform.position, DetectionRange);
+        Unit closestEnemy = null;
+        float closestDistance = float.MaxValue;
+
+        // 先找出最近的敵人
         foreach (var enemy in enemies)
         {
             Unit enemyUnit = enemy.GetComponent<Unit>();
-            if (enemyUnit != null && enemyUnit.team != this.team)  // 檢查是不是敵方
+            if (enemyUnit == null || enemyUnit.team == this.team) continue;
+            Debug.Log($"準備攻擊敵人{enemyUnit.team}");
+
+            float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
+            if (distanceToEnemy < closestDistance)
             {
-                float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
+                closestEnemy = enemyUnit;
+                closestDistance = distanceToEnemy;
+            }
+        }
 
-                // 只有當敵人超出攻擊範圍時才追蹤
-                if (distanceToEnemy > AttackRange)
-                {
-                    // 計算移動目標位置
-                    Vector3 directionToEnemy = (enemy.transform.position - transform.position).normalized;
-                    Vector3 targetPosition = enemy.transform.position - directionToEnemy * AttackRange;
-                    MoveTo(targetPosition); // 移動到攻擊範圍內
-                }
+        // 對最近的敵人執行動作
+        if (closestEnemy != null)
+        {
+            // 只有當敵人超出攻擊範圍時才追蹤
+            if (closestDistance > AttackRange)
+            {
+                // 計算移動目標位置
+                Vector3 directionToEnemy = (closestEnemy.transform.position - transform.position).normalized;
+                Vector3 targetPosition = closestEnemy.transform.position - directionToEnemy * AttackRange;
+                MoveTo(targetPosition); // 移動到攻擊範圍內
+            }
 
-                // 當距離小於等於攻擊範圍，且攻擊冷卻結束，則攻擊敵人
-                if (distanceToEnemy <= AttackRange && Time.time - lastAttackTime >= AttackCooldown)
-                {
-                    AttackTarget(enemy.transform.position);
-                }
-
-                break; // 找到敵人就停止尋找
+            // 當距離小於等於攻擊範圍，且攻擊冷卻結束，則攻擊敵人
+            if (closestDistance <= AttackRange && Time.time - lastAttackTime >= AttackCooldown)
+            {
+                AttackTarget(closestEnemy.transform.position);
             }
         }
     }
@@ -212,7 +234,7 @@ public abstract class Unit : MonoBehaviour
         // 檢查當前物體和其他 Unit 的碰撞器是否重疊
         Collider otherCollider = otherUnit.GetComponent<Collider>();
         if (otherCollider != null)
-        {    
+        {
             return GetComponent<Collider>().bounds.Intersects(otherCollider.bounds);
         }
         return false;

@@ -1,5 +1,5 @@
+using UnityEditor.SearchService;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI; // 用於按鈕
 
 public class StartSceneMenu : MonoBehaviour
@@ -11,15 +11,15 @@ public class StartSceneMenu : MonoBehaviour
     void Start()
     {
         // 確保按鈕事件已經綁定
-        startButton.onClick.AddListener(OnStartButtonClicked);
+        startButton.onClick.AddListener(OnStartClicked);
         exitButton.onClick.AddListener(OnExitButtonClicked);
     }
 
-    // 開始遊戲，載入 Scene1
-    void OnStartButtonClicked()
+    // 開始遊戲，載入 OderScene
+    void OnStartClicked()
     {
         // 加載 Scene1
-        SceneManager.LoadScene(1);
+        GlobalSceneManager.Instance.LoadScene(SceneEnum.OrderScene);
     }
 
     // 退出遊戲

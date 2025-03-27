@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 8894248964885343526}
   - component: {fileID: 3065117171869169410}
   - component: {fileID: 1050565266755391010}
-  - component: {fileID: 139429662920874067}
+  - component: {fileID: -4910387495000179284}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Tank
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -132,7 +132,7 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &139429662920874067
+--- !u!114 &-4910387495000179284
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -146,3 +146,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   team: {fileID: 0}
   layerName: Unit
+  prefab: {fileID: 0}
