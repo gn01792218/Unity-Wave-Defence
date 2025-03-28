@@ -51,23 +51,20 @@ public class OrderMenu : MonoBehaviour
 
     void OnBuyTank1ButtonClicked()
     {
-        // var unit = new TankUnit();
         UnitManager.Instance.PurchaseUnit(UnitType.Tank1);
-        // PlayerInfo.Instance.AddMoney(-unit.Cost);
+        PlayerInfo.Instance.AddMoney(-UnitCostManager.GetCostForUnitType(UnitType.Tank1));
     }
 
     void OnBuyRocketButtonClicked()
     {
-        // var unit = new RocketCarUnit();
         UnitManager.Instance.PurchaseUnit(UnitType.RocketCar);
-        // PlayerInfo.Instance.AddMoney(-unit.Cost);
+        PlayerInfo.Instance.AddMoney(-UnitCostManager.GetCostForUnitType(UnitType.RocketCar));
     }
 
     void OnBuyMechButtonClicked()
     {
-        // var unit = new MechUnit();
         UnitManager.Instance.PurchaseUnit(UnitType.Mech);
-        // PlayerInfo.Instance.AddMoney(-unit.Cost);
+        PlayerInfo.Instance.AddMoney(-UnitCostManager.GetCostForUnitType(UnitType.Mech));
     }
 
     void OnBackToInitSceneButtonClicked()

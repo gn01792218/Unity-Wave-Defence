@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -12,11 +10,9 @@ public abstract class Unit : MonoBehaviour
 
     [SerializeField]
     private string layerName = "Unit";
-    public abstract string PrefabPath { get; }
 
 
     [Header("Unit Stats")]
-    public abstract float Cost { get; set; }
     public abstract float Health { get; set; }
     public abstract float MoveSpeed { get; set; }
     public abstract float AttackRange { get; set; }
@@ -68,7 +64,6 @@ public abstract class Unit : MonoBehaviour
     {
         BulletFactory.Instance.RegisterBullet(BulletType);
     }
-
     void Update()
     {
         HandleWeaponSwitch(); // 檢查武器切換
@@ -82,11 +77,6 @@ public abstract class Unit : MonoBehaviour
         {
             SearchForEnemies();
         }
-    }
-
-    public float getUnitCostValue()
-    {
-        return this.Cost;
     }
     // ✅ 允許玩家或 AI 讓單位移動到指定位置
 
