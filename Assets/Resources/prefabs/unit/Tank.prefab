@@ -144,6 +144,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53986a63e71864d44a3497b58ebfbe19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  team: {fileID: 0}
   layerName: Unit
-  prefab: {fileID: 0}

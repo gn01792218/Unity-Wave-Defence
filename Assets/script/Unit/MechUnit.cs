@@ -1,6 +1,6 @@
 public class MechUnit : Unit
 {
-    public override float Health { get; set; } = 20f;
+    public override float MaxHealth { get; set; } = 20f;
     public override float MoveSpeed { get; set; } = 10f;
     public override float AttackRange { get; set; } = 10f;
     public override float AttackCooldown { get; set; } = 3f;

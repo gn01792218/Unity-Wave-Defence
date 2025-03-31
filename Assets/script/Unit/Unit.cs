@@ -1,7 +1,8 @@
 using System;
-using Unity.VisualScripting;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public abstract class Unit : MonoBehaviour
 {
@@ -11,9 +12,15 @@ public abstract class Unit : MonoBehaviour
     [SerializeField]
     private string layerName = "Unit";
 
+    [Header("UI Elements")]
+    private GameObject uiCanvasInstance;
+    private Slider healthBar;
+    private TMP_Text healthText;
+    private Slider attackCooldownBar;
 
     [Header("Unit Stats")]
-    public abstract float Health { get; set; }
+    public float Health { get; set; } // 默認會在 Awake 中初始化
+    public abstract float MaxHealth { get; set; }
     public abstract float MoveSpeed { get; set; }
     public abstract float AttackRange { get; set; }
     public abstract float AttackCooldown { get; set; }
@@ -56,6 +63,8 @@ public abstract class Unit : MonoBehaviour
         {
             Debug.LogError("物件未能放置在有效的 NavMesh 上，請檢查地板的 NavMesh 烘焙設置。");
         }
+        // 初始化 Health，設為 MaxHealth
+        Health = MaxHealth;
 
         // 檢查是否與其他單位重疊，如果重疊則將位置微調
         CheckForOverlappingUnits();
@@ -63,9 +72,11 @@ public abstract class Unit : MonoBehaviour
     void Start()
     {
         BulletFactory.Instance.RegisterBullet(BulletType);
+        InitializeUI();
     }
     void Update()
     {
+        UpdateUI();
         HandleWeaponSwitch(); // 檢查武器切換
         // 當到達右鍵目標位置後
         if (Vector3.Distance(transform.position, playerTargetPosition) <= agent.stoppingDistance)
@@ -78,8 +89,42 @@ public abstract class Unit : MonoBehaviour
             SearchForEnemies();
         }
     }
-    // ✅ 允許玩家或 AI 讓單位移動到指定位置
+    private void InitializeUI()
+    {
+        // 使用 UIHelper 创建 Canvas
+        uiCanvasInstance = UIHelper.CreateCanvas("UnitUI", transform, new Vector3(0, 2, 0)); // 设置 Canvas 在 Unit 顶部
 
+        // 创建血条
+        healthBar = UIHelper.CreateSlider("HealthBar", new Vector3(0, 0, 0), uiCanvasInstance.transform, Color.green);
+        healthBar.value = 1; // 初始血量为满
+
+        // 创建攻击冷却条
+        attackCooldownBar = UIHelper.CreateSlider("AttackCooldownBar", new Vector3(0, 10, 0), uiCanvasInstance.transform, Color.blue);
+        attackCooldownBar.value = 0; // 初始冷却为 0
+    }
+    private void UpdateUI()
+    {
+        if (healthBar != null)
+        {
+            // 更新血条值，设置为当前血量占最大血量的比例
+            healthBar.value = Health / MaxHealth;
+            // 更新血条文本显示
+            if (DEVTool.Instance.IsDevelopmentMode)
+            {
+                if (healthText == null) healthText = UIHelper.CreateText(healthBar.transform, "HealthText", new Vector3(0, 12, 0));
+                else healthText.text = $"{Health}/{MaxHealth}";
+            }
+        }
+
+        if (attackCooldownBar != null)
+        {
+            attackCooldownBar.value = Mathf.Clamp01((Time.time - lastAttackTime) / AttackCooldown);
+        }
+
+        // // 让 UI 朝向摄像机
+        UIHelper.CanvasLookAtCamera(uiCanvasInstance.transform);
+    }
+    // ✅ 允許玩家或 AI 讓單位移動到指定位置
     public void MoveTo(Vector3 destination)
     {
         if (agent != null)
@@ -115,7 +160,6 @@ public abstract class Unit : MonoBehaviour
     public void SetTeam(Team team)
     {
         this.team = team;
-        Debug.Log($"設置隊伍{team.teamType}");
     }
     public void SetAttackTargetPosition(Vector3 position)
     {
@@ -175,7 +219,6 @@ public abstract class Unit : MonoBehaviour
         {
             Unit enemyUnit = enemy.GetComponent<Unit>();
             if (enemyUnit == null || enemyUnit.team == this.team) continue;
-            Debug.Log($"準備攻擊敵人{enemyUnit.team}");
 
             float distanceToEnemy = Vector3.Distance(transform.position, enemy.transform.position);
             if (distanceToEnemy < closestDistance)

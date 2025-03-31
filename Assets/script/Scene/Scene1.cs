@@ -30,6 +30,9 @@ public class Scene1 : MonoBehaviour
         //產生敵方隊伍
         UnitManager.Instance.AddEnemyUnit(UnitType.Mech);
         UnitManager.Instance.SpawnEnemyUnits();
+
+        // 開啟DEV模式
+        DEVTool.Instance.ToggleDevelopmentMode();
     }
     
 
