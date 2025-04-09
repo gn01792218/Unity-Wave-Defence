@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
+using UnityEngine.EventSystems;
 
 public class GlobalSceneManager : Singleton<GlobalSceneManager>
 {
@@ -46,11 +47,29 @@ public class GlobalSceneManager : Singleton<GlobalSceneManager>
     // 處理場景加載完成的邏輯
     private void OnSceneLoadedHandler(Scene scene, LoadSceneMode mode)
     {
+        // 🧠 確保場景中有 EventSystem, 所有UI的事件都需要有這個
+        CheckEventSystem();
         // 通知場景已經加載完成
         OnSceneLoaded?.Invoke();
     }
 
-    public int GetCurrentSceneIndex(){
+    private static void CheckEventSystem()
+    {
+        if (FindFirstObjectByType<EventSystem>() == null)
+        {
+            Debug.LogWarning("Scene 中找不到 EventSystem，自動建立一個。");
+
+            // 創建 EventSystem 物件並命名
+            GameObject eventSystemGO = new GameObject("EventSystem");
+            eventSystemGO.AddComponent<EventSystem>();
+
+            // 添加 StandaloneInputModule 來處理輸入
+            eventSystemGO.AddComponent<StandaloneInputModule>();
+        }
+    }
+
+    public int GetCurrentSceneIndex()
+    {
         return SceneManager.GetActiveScene().buildIndex;
     }
 

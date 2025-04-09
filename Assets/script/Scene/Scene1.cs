@@ -35,7 +35,7 @@ public class Scene1 : MonoBehaviour
         DEVTool.Instance.ToggleDevelopmentMode();
 
         // 技能列表初始化
-        TacticalSkillManager.Instance.InitializeSkillBar();
+        TacticalSkillManager.Instance.GenerateSkillButtons();
         Debug.Log($"技能列表{TacticalSkillManager.Instance.GetPlayerTacticalSkills().Count}");
     }
     
