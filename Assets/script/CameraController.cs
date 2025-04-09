@@ -35,31 +35,31 @@ public class CameraController : MonoBehaviour
     }
     void HandleEdgeMovement()
     {
-        float horizontalMove = 0f;
-        float verticalMove = 0f;
+        // float horizontalMove = 0f;
+        // float verticalMove = 0f;
 
-        // 檢查滑鼠位置，若超過邊界範圍則開始移動
-        if (Input.mousePosition.x <= edgeBuffer)
-        {
-            horizontalMove = -1f; // 向左移動
-        }
-        else if (Input.mousePosition.x >= Screen.width - edgeBuffer)
-        {
-            horizontalMove = 1f; // 向右移動
-        }
+        // // 檢查滑鼠位置，若超過邊界範圍則開始移動
+        // if (Input.mousePosition.x <= edgeBuffer)
+        // {
+        //     horizontalMove = -1f; // 向左移動
+        // }
+        // else if (Input.mousePosition.x >= Screen.width - edgeBuffer)
+        // {
+        //     horizontalMove = 1f; // 向右移動
+        // }
 
-        if (Input.mousePosition.y <= edgeBuffer)
-        {
-            verticalMove = -1f; // 向下移動
-        }
-        else if (Input.mousePosition.y >= Screen.height - edgeBuffer)
-        {
-            verticalMove = 1f; // 向上移動
-        }
+        // if (Input.mousePosition.y <= edgeBuffer)
+        // {
+        //     verticalMove = -1f; // 向下移動
+        // }
+        // else if (Input.mousePosition.y >= Screen.height - edgeBuffer)
+        // {
+        //     verticalMove = 1f; // 向上移動
+        // }
 
-        // 根據滑鼠位置的偏移來移動相機
-        Vector3 moveDirection = new Vector3(horizontalMove, verticalMove, 0);
-        transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
+        // // 根據滑鼠位置的偏移來移動相機
+        // Vector3 moveDirection = new Vector3(horizontalMove, verticalMove, 0);
+        // transform.Translate(moveDirection * moveSpeed * Time.deltaTime, Space.World);
     }
     // 控制相機的縮放
     void HandleZoom()

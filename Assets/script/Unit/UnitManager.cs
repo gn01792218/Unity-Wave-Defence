@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class UnitManager : MonoBehaviour
+public class UnitManager : Singleton<UnitManager>
 {
-    public static UnitManager Instance { get; private set; }
-
     // List 來存儲所有購買的單位
     private List<Unit> playerUnits = new List<Unit>();
     private List<Unit> enemyUnits = new List<Unit>();
@@ -17,18 +15,6 @@ public class UnitManager : MonoBehaviour
     public Transform spawnPoint; // 單位生成的起始位置
     public float spacing = 2.0f; // 生成單位的間距
 
-    void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-        }
-        else
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // 確保場景切換時不銷毀
-        }
-    }
     void Start()
     {
         InitSpawnPosition();

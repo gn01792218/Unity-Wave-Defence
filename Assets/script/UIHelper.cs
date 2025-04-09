@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 
 public static class UIHelper
 {
@@ -72,8 +73,6 @@ public static class UIHelper
 
         return slider;
     }
-
-    // 创建血量文本
     public static TMP_Text CreateText(Transform parent, string name, Vector3 localPosition)
     {
         // 创建一个新的文本对象
@@ -94,6 +93,57 @@ public static class UIHelper
         rectTransform.rotation = Quaternion.Euler(90, rectTransform.rotation.eulerAngles.y, 270);  // 修复翻转
 
         return text;
+    }
+    public static GameObject CreateButton(string name, Vector3 position, Transform parent, Action onClick)
+    {
+        GameObject buttonGO = new GameObject(name);
+        buttonGO.transform.SetParent(parent, false); // 第二個參數 false，確保 UI 變換不會被影響
+        RectTransform rectTransform = buttonGO.AddComponent<RectTransform>();
+        rectTransform.sizeDelta = new Vector2(150, 50); // 設置按鈕大小
+        rectTransform.anchoredPosition = position; // 使用 `anchoredPosition` 而不是 `localPosition`
+        rectTransform.localScale = Vector3.one;
+
+        Button button = buttonGO.AddComponent<Button>();
+        Image buttonImage = buttonGO.AddComponent<Image>(); // 設置按鈕的可視化
+        buttonImage.color = Color.white; // 預設為白色
+
+        // 文字
+        GameObject textGO = new GameObject("Text");
+        textGO.transform.SetParent(buttonGO.transform, false);
+        TMP_Text buttonText = textGO.AddComponent<TextMeshProUGUI>();
+        buttonText.text = name;
+        buttonText.fontSize = 20;
+        buttonText.alignment = TextAlignmentOptions.Center;
+
+        RectTransform textRect = textGO.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = Vector2.zero;
+        textRect.offsetMax = Vector2.zero;
+
+        button.onClick.AddListener(() => onClick.Invoke());
+
+        return buttonGO;
+    }
+    public static GameObject CreateCheckbox(string label, Vector3 position, Transform parent, System.Action<bool> onValueChanged)
+    {
+        GameObject checkboxObj = new GameObject(label);
+        checkboxObj.transform.SetParent(parent);
+        checkboxObj.transform.localPosition = position;
+
+        Toggle toggle = checkboxObj.AddComponent<Toggle>();
+        toggle.onValueChanged.AddListener((value) => onValueChanged?.Invoke(value));
+
+        // 使用 LegacyRuntime.ttf 或其他字型
+        Text labelText = new GameObject("Label").AddComponent<Text>();
+        labelText.transform.SetParent(checkboxObj.transform);
+        labelText.text = label;
+        labelText.alignment = TextAnchor.MiddleLeft;
+
+        // 使用 LegacyRuntime.ttf 作為字型
+        labelText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        return checkboxObj;
     }
     // 让物体始终朝向摄像机，但不受父物体旋转的影响
     public static void CanvasLookAtCamera(Transform objTransform)

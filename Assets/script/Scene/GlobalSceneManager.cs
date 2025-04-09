@@ -2,43 +2,28 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 
-public class GlobalSceneManager : MonoBehaviour
+public class GlobalSceneManager : Singleton<GlobalSceneManager>
 {
-    // 唯一的實例
-    public static GlobalSceneManager Instance { get; private set; }
+    // 在場景加載完成後執行的事件
+    // 讓外部可以訂閱的方法
+    public event Action OnSceneLoaded;
 
-    // 用來儲存當前場景的名稱或 ID
-    private SceneEnum currentScene;
-
-    // 在場景加載完成後執行一些邏輯
-    public delegate void OnSceneLoadedDelegate();
-    public event OnSceneLoadedDelegate OnSceneLoaded;
-
-
-    void Awake()
+    public void Start()
     {
-        // 確保只會有一個 GlobalSceneManager 實例
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // 確保在場景切換時這個物件不會被銷毀
-        }
-        else
-        {
-            Destroy(gameObject); // 若已經存在實例，則銷毀當前物件
-        }
+        SceneManager.sceneLoaded += OnSceneLoadedHandler;
     }
 
-   public void NextScene()
+    public void NextScene()
     {
         // 取得 Enum 所有的值
         SceneEnum[] values = (SceneEnum[])Enum.GetValues(typeof(SceneEnum));
-        int currentIndex = Array.IndexOf(values, currentScene);
-    
+        int currentIndex = GetCurrentSceneIndex();
+
         // 確保不超出範圍
         if (currentIndex < values.Length - 1)
         {
             SceneEnum nextScene = values[currentIndex + 1];
+            Debug.Log($"場景列表{values.Length},當前場景{GetCurrentSceneIndex()}、index{currentIndex},將切換到{currentIndex + 1},{nextScene}");
             LoadScene(nextScene);
         }
     }
@@ -47,7 +32,7 @@ public class GlobalSceneManager : MonoBehaviour
     public void LoadScene(SceneEnum scene)
     {
         // 如果場景名相同，就不做任何事情
-        if (currentScene == scene)
+        if (GetCurrentSceneIndex() == (int)scene)
         {
             Debug.Log("Already in the target scene.");
             return;
@@ -55,26 +40,18 @@ public class GlobalSceneManager : MonoBehaviour
 
         // 加載場景
         SceneManager.LoadScene((int)scene);
-        currentScene = scene;
-
-        // 監聽場景加載完成事件
-        SceneManager.sceneLoaded += OnSceneLoadedHandler;
+        Debug.Log($"切換場景到{scene}");
     }
 
     // 處理場景加載完成的邏輯
     private void OnSceneLoadedHandler(Scene scene, LoadSceneMode mode)
     {
-        // // 確保這裡使用的場景名稱與 Enum 匹配
-        // if (System.Enum.TryParse(scene.name, out SceneEnum sceneEnum))
-        // {
-        //     currentScene = sceneEnum;
-        // }
-
-        // 解除監聽，避免每次都觸發
-        SceneManager.sceneLoaded -= OnSceneLoadedHandler;
-
         // 通知場景已經加載完成
         OnSceneLoaded?.Invoke();
+    }
+
+    public int GetCurrentSceneIndex(){
+        return SceneManager.GetActiveScene().buildIndex;
     }
 
     // 退出遊戲（在編輯器中無法退出）
