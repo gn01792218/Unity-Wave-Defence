@@ -89,14 +89,14 @@ public abstract class TacticalSkill : MonoBehaviour
         // 1. 檢查玩家是否有足夠的戰術點數
         if (PlayerInfo.Instance.TacticalPoints < skillCost)
         {
-            Debug.Log("戰術點數不足，無法施放技能！");
+            // Debug.Log("戰術點數不足，無法施放技能！");
             return false;
         }
 
         // 2. 檢查技能是否處於冷卻狀態
         if (isOnCooldown)
         {
-            Debug.Log("技能正在冷卻中，無法使用！");
+            // Debug.Log("技能正在冷卻中，無法使用！");
             return false;
         }
 
@@ -135,12 +135,11 @@ public abstract class TacticalSkill : MonoBehaviour
         if (interactable) SetSkillButtonImage(skillImagePath); 
         else SetSkillButtonImage(skillDisableImagePath); // 切換圖片為灰階 / 禁用版本
         skillButtonPrefb.interactable = interactable;
-        Debug.Log($"設置按鈕互動{interactable},圖片更換為{skillButtonPrefb.GetComponent<Image>().sprite.name}");
+        // Debug.Log($"設置按鈕互動{interactable},圖片更換為{skillButtonPrefb.GetComponent<Image>().sprite.name}");
     }
 
     private void SetSkillButtonImage(string path)
     {
-        Debug.Log($"更換的圖片路徑為:{path}");
         if (string.IsNullOrEmpty(path)) return;
 
         Sprite sprite = Resources.Load<Sprite>(path);

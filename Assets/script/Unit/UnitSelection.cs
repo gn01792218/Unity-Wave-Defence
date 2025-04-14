@@ -101,7 +101,7 @@ public class UnitSelection : MonoBehaviour
         // 框選多個單位
         Rect selectionRect = GetScreenSelectionRect();
 
-        foreach (Unit unit in FindObjectsOfType<Unit>())
+        foreach (Unit unit in FindObjectsByType<Unit>(FindObjectsSortMode.None))
         {
             Vector3 screenPos = mainCamera.WorldToScreenPoint(unit.transform.position);
 

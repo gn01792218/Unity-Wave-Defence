@@ -28,13 +28,14 @@ public abstract class Unit : MonoBehaviour
     public abstract float DetectionRange { get; set; }
     public abstract BulletType BulletType { get; set; }
 
-
     private NavMeshAgent agent;
     private float lastAttackTime;
     private Vector3 attackTargetPosition;
 
 
+    private float healthTakenAmount = 0; //用來給會對生命值造成傷害的技能，使用的+成
     private bool isPlayerControl = false; // 標誌是否正在被玩家控制
+
 
     private Vector3 playerTargetPosition; // 玩家指定的右鍵目標位置
 
@@ -175,6 +176,12 @@ public abstract class Unit : MonoBehaviour
             Die();
         }
     }
+    public float SetHealthTakenAmount(float amount){
+        return healthTakenAmount = amount;
+    }
+    public float GetHealthTakenAmount(){
+        return healthTakenAmount;
+    }
     private void AttackTarget(Vector3 position)
     {
         lastAttackTime = Time.time;
@@ -188,7 +195,8 @@ public abstract class Unit : MonoBehaviour
         BulletBase bullet = BulletFactory.Instance.GetBullet(BulletType);
 
         // 設定子彈初始位置與方向
-        bullet.Launch(attackTargetPosition, transform.position, gameObject);
+        //最後一個參數是設定子彈傷害+成用的
+        bullet.Launch(attackTargetPosition, transform.position, gameObject, healthTakenAmount);
     }
 
     private void Die()

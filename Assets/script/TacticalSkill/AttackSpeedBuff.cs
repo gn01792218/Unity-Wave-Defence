@@ -16,15 +16,15 @@ public class AttackSpeedBuff : TacticalSkill
     public override float OnBuff(Unit targetUnit)
     {
         var originData = targetUnit.AttackCooldown;
-        Debug.Log($"單位初始攻擊冷卻{originData}");
+        // Debug.Log($"單位初始攻擊冷卻{originData}");
         if(originData - BuffAmount < 0) targetUnit.AttackCooldown = 1;
         else targetUnit.AttackCooldown -= BuffAmount;
-        Debug.Log("攻擊冷卻增加到：" + targetUnit.AttackCooldown);
+        // Debug.Log("攻擊冷卻增加到：" + targetUnit.AttackCooldown);
         return originData;
     }
     public override void ResetStatus(Unit targetUnit, float originData)
     {
        targetUnit.AttackCooldown = originData; 
-       Debug.Log($"重置攻擊冷卻時間回{originData},最終傷害為{targetUnit.AttackCooldown}");
+    //    Debug.Log($"重置攻擊冷卻時間回{originData},最終傷害為{targetUnit.AttackCooldown}");
     }
 }

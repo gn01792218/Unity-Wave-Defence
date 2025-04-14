@@ -19,15 +19,15 @@ public class AttackBuff : TacticalSkill
     public override float OnBuff(Unit targetUnit)
     {
         var originData = targetUnit.Damage;
-        Debug.Log($"單位初始攻擊力{originData}");
-        targetUnit.Damage += BuffAmount; // 增加攻擊力 10
-        Debug.Log("攻擊力增加到：" + targetUnit.Damage);
+        // Debug.Log($"單位初始攻擊力{originData}");
+        targetUnit.SetHealthTakenAmount(BuffAmount);
+        Debug.Log($"子彈攻擊力增加：{BuffAmount}, 當前目標的子彈加成{targetUnit.GetHealthTakenAmount()}");
         return originData;
     }
 
     public override void ResetStatus(Unit targetUnit, float originData)
     {
-       targetUnit.Damage = originData; 
-       Debug.Log($"重置Damage回{originData},最終傷害為{targetUnit.Damage}");
+        targetUnit.SetHealthTakenAmount(0);
+           Debug.Log($"重置子彈加成回0,單位的子彈傷害加成為{targetUnit.GetHealthTakenAmount()}");
     }
 }

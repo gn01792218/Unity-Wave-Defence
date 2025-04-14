@@ -14,12 +14,15 @@ public abstract class BulletBase : MonoBehaviour
     private Coroutine moveCoroutine;
     private Coroutine lifetimeCoroutine;
     private bool hasHit = false; // 避免多次觸發
+    private float damageBuffAmount=0;
     private GameObject Shooter;
 
-    public void Launch(Vector3 targetPos, Vector3 unitPosition,GameObject shooter)
+    public void Launch(Vector3 targetPos, Vector3 unitPosition,GameObject shooter,float damageBuff)
     {
         // 重置狀態
         hasHit = false;
+        //設置buff+成
+        damageBuffAmount = damageBuff;
 
         // 確保物件被激活
         gameObject.SetActive(true);
@@ -74,8 +77,8 @@ public abstract class BulletBase : MonoBehaviour
             if (enemy != null)
             {
                 hasHit = true;
-                // Debug.Log($"Hit enemy: {enemy.name}, Dealing {Damage} damage.");
-                enemy.TakeDamage(Damage);
+                Debug.Log($"Hit enemy: {enemy.name}, Dealing {Damage+damageBuffAmount} damage.");
+                enemy.TakeDamage(Damage+damageBuffAmount);
 
                 // 處理爆炸效果
                 HandleExplosion(other.transform.position);
@@ -97,6 +100,9 @@ public abstract class BulletBase : MonoBehaviour
     {
         // 標記已觸發碰撞
         hasHit = true;
+
+        //將子彈的傷害+成還原
+        damageBuffAmount = 0;
 
         // 停止所有正在運行的協程
         StopAllCoroutines();
