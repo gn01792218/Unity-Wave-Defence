@@ -2,11 +2,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 
-public class Scene1 : MonoBehaviour
+public class Scene1 : Singleton<Scene1>
 {
-    // 唯一的實例
-    public static GlobalSceneManager Instance { get; private set; }
-
     // 用來儲存當前場景的名稱或 ID
     private SceneEnum currentScene;
 
@@ -15,21 +12,26 @@ public class Scene1 : MonoBehaviour
     public event OnSceneLoadedDelegate OnSceneLoaded;
 
 
-    void Awake()
+    void Start()
     {
         Init();
     }
 
-    private void Init(){
+    private void Init()
+    {
         // 初始化隊伍
         TeamManager.Instance.InitializeTeams();
+        BaseStation playerBase = GameObject.Find("PlayerBase").GetComponent<BaseStation>();
+        BaseStation enemyStation = GameObject.Find("EnemyBase").GetComponent<BaseStation>();
 
         //產生玩家購買的軍隊
-        UnitManager.Instance.SpawnPurchasedUnits();
+        UnitManager.Instance.SpawnPurchasedUnits(playerBase.GetCenterPosition());
 
         //產生敵方隊伍
+        //之後要在UnitManager裡面創一個GenerateEnemyUnits的方法
+        //參數 : 1.軍隊型態列表 2.軍隊出生地點
         UnitManager.Instance.AddEnemyUnit(UnitType.Mech);
-        UnitManager.Instance.SpawnEnemyUnits();
+        UnitManager.Instance.SpawnEnemyUnits(enemyStation.GetCenterPosition());
 
         // 開啟DEV模式
         DEVTool.Instance.ToggleDevelopmentMode();
@@ -38,7 +40,7 @@ public class Scene1 : MonoBehaviour
         TacticalSkillManager.Instance.GenerateSkillButtons();
         Debug.Log($"技能列表{TacticalSkillManager.Instance.GetPlayerTacticalSkills().Count}");
     }
-    
+
 
     // 處理場景加載完成的邏輯
     private void OnSceneLoadedHandler(Scene scene, LoadSceneMode mode)

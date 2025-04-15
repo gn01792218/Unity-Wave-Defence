@@ -1,30 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UnitSelection : MonoBehaviour
+public class UnitSelection : Singleton<UnitSelection>
 {
     public Camera mainCamera;
     public LayerMask unitLayer;
     public LayerMask groundLayer;
-    public static UnitSelection Instance { get; private set; }  // 单例模式
 
     private List<Unit> selectedUnits = new List<Unit>();
 
     // 框選相關變數
     private Vector3 startMousePosition;
     private bool isDragging = false;
-
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);  // 确保只有一个 `UnitSelection` 实例
-        }
-    }
 
     void Start()
     {
@@ -85,9 +72,11 @@ public class UnitSelection : MonoBehaviour
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
+            Debug.Log($"Ray: {ray.origin} {ray.direction}");
 
             if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayer))
             {
+                Debug.Log($"Hit: {hit.point} {hit.normal} {hit.collider}");
                 foreach (Unit unit in selectedUnits)
                 {
                     unit.MoveToPlayerSpceficPosition(hit.point); //移動到玩家指定位置

@@ -62,7 +62,7 @@ public abstract class Unit : MonoBehaviour
         }
         else
         {
-            Debug.LogError("物件未能放置在有效的 NavMesh 上，請檢查地板的 NavMesh 烘焙設置。");
+            Debug.LogError("物件未能放置在有效的 NavMesh 上，請檢查地板的 NavMesh 烘焙設置，當前Unit位置"+startPosition);
         }
         // 初始化 Health，設為 MaxHealth
         Health = MaxHealth;
@@ -136,7 +136,7 @@ public abstract class Unit : MonoBehaviour
     }
     public void MoveToPlayerSpceficPosition(Vector3 destination)
     {
-        // Debug.Log("移動到玩家指定位置");
+        Debug.Log("移動到玩家指定位置");
         SetPlayControl(true);
         SetPlayerTargetPosition(destination);
         MoveTo(destination);
